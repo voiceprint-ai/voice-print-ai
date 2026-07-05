@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Defense-in-depth. The backend uses the Admin SDK (which BYPASSES these rules)
+// and enforces ownership in code. These rules exist so that if the frontend ever
+// talks to Firestore directly, a user can still only ever touch their own data,
+// and the sensitive `usage` counters are never client-writable.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    match /projects/{projectId} {
+      allow read: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      // Samples/analyses inherit ownership from the parent project.
+      match /{sub=**} {
+        allow read, write: if signedIn()
+          && get(/databases/$(database)/documents/projects/$(projectId)).data.ownerUid == request.auth.uid;
+      }
+    }
+
+    // Usage/quota counters are managed by the backend only — never client-writable.
+    match /usage/{uid}/{document=**} {
+      allow read: if signedIn() && uid == request.auth.uid;
+      allow write: if false;
+    }
+  }
+}
