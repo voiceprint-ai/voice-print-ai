@@ -126,7 +126,7 @@ export default function ProjectDetailPage() {
   async function handleDeleteProject() {
     if (!confirm(`Delete "${project!.name}" and everything in it? This can't be undone.`)) return;
     await deleteProject(project!.id);
-    router.push("/dashboard");
+    router.push("/dashboard/projects");
   }
 
   return (
