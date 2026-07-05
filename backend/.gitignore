@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Secrets & local config — NEVER commit these
+.env
+.env.*
+!.env.example
+*.pem
+serviceAccount*.json
+firebase-adminsdk*.json
+
+# Logs
+*.log
+logs/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
