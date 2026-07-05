@@ -133,7 +133,7 @@ export default function DashboardPage() {
               {projects.map((p) => (
                 <li key={p.id}>
                   <Link
-                    href={`/dashboard/${p.id}`}
+                    href={`/dashboard/projects/${p.id}`}
                     className="block rounded-2xl"
                   >
                     <Card className="hover:border-indigo-600 transition-colors h-full">

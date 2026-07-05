@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+/**
+ * Design tokens — Voiceprint AI
+ * "Ink & paper" identity: paper background, ink-blue primary action, a brass
+ * accent used sparingly, muted moss/rose for match/drift states (never the
+ * only signal — always paired with text/numbers, see components).
+ */
+@theme {
+  --color-paper: #f6f4ef;
+  --color-paper-dim: #ece9e1;
+  --color-ink-900: #20222b;
+  --color-ink-700: #454854;
+  --color-ink-500: #6b6e7a;
+  --color-indigo-600: #3d4a8a;
+  --color-indigo-700: #2f3a6d;
+  --color-ochre-500: #b98b2e;
+  --color-ochre-100: #f3e6c8;
+  --color-moss-600: #4b6a52;
+  --color-moss-100: #e1e9e0;
+  --color-rose-600: #a34b4b;
+  --color-rose-100: #f2dede;
+
+  --font-display: var(--font-plex-sans), "Segoe UI", Arial, sans-serif;
+  --font-body: var(--font-plex-serif), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-plex-mono), "Courier New", monospace;
+}
+
 @layer base {
   * {
     margin: 0;
@@ -7,10 +33,20 @@
     box-sizing: border-box;
   }
 
+  html {
+    color-scheme: light;
+  }
+
   body {
     max-width: 100%;
     overflow-x: hidden;
-    font-family: var(--font-roboto-sans), Arial, Helvetica, sans-serif;
+    font-family: var(--font-body);
+    background-color: var(--color-paper);
+    color: var(--color-ink-900);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
   }
 
   a {
@@ -24,63 +60,110 @@
 
   button {
     cursor: pointer;
-    outline: none;
     border: none;
     background: transparent;
-    transition: all 200ms ease-in-out;
+    font-family: inherit;
+    transition: transform 150ms ease-in-out, background-color 150ms ease-in-out;
   }
 
   button:active {
     transform: translateY(1px);
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+  }
+
+  /* Accessibility floor: every focusable element gets a clearly visible ring.
+     Never remove outline without replacing it — keyboard users rely on this. */
+  :focus-visible {
+    outline: 3px solid var(--color-indigo-600);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  input, textarea {
+    font-family: inherit;
+    color: var(--color-ink-900);
+  }
+
+  /* Respect reduced-motion preference everywhere, not just in one component. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
 @layer components {
   .row {
     width: 100%;
+    max-width: 1180px;
     margin: 0 auto;
     padding: 0 24px;
   }
 
   .global_container {
-    padding: 24px 0;
+    padding: 40px 0;
     width: 100%;
   }
-}
 
-@layer home {
-  .home__features--bg {
-    background: #75d5f0;
-    background: radial-gradient(circle,rgba(117, 213, 240, 1) 0%, rgba(92, 139, 196, 1) 100%);
+  /* Visually hidden but reachable by keyboard/screen readers (skip link, etc). */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
-  
-  .home__features--bg:hover {
-    background: #4cbad9;
-    color: beige;
-    background: radial-gradient(circle,rgba(76, 186, 217, 1) 0%, rgba(32, 72, 120, 1) 100%);
-    transform: scale(1.05);
-    transition: all 300ms ease-in-out
+
+  .visually-hidden:focus {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    width: auto;
+    height: auto;
+    padding: 10px 16px;
+    margin: 0;
+    clip: auto;
+    background: var(--color-ink-900);
+    color: var(--color-paper);
+    border-radius: 6px;
+    z-index: 100;
+    font-family: var(--font-display);
   }
 }
 
 @layer nav {
   .link__hover-effect {
     position: relative;
-    transition: all 300ms ease-in-out;
+    transition: color 200ms ease-in-out;
   }
 
   .link__hover-effect:after {
-    		content: "";
-    		position: absolute;
-    		height: 3px;
-    		background-color: black;
-    		width: 0;
-    		right: 0;
-    		bottom: -3px;
-    		transition: all 300ms ease;
-	}
-	.link__hover-effect:hover:after {
-    		width: 100%;
-    		left: 0;
+    content: "";
+    position: absolute;
+    height: 2px;
+    background-color: var(--color-ink-900);
+    width: 0;
+    right: 0;
+    bottom: -4px;
+    transition: width 250ms ease;
+  }
+
+  .link__hover-effect:hover:after,
+  .link__hover-effect[aria-current="page"]:after {
+    width: 100%;
+    left: 0;
+    right: auto;
   }
 }
