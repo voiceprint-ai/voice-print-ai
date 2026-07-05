@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/global/NavBar";
+import { AuthProvider } from "@/lib/auth-context";
 
 const robotoSans = Roboto({
   variable: "--font-roboto-sans",
@@ -24,10 +25,12 @@ export default function RootLayout({
       className={`${robotoSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <NavBar />
-        <div className="h-[90vh]">
-          {children}
-        </div>
+        <AuthProvider>
+          <NavBar />
+          <div className="h-[90vh]">
+            {children}
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
