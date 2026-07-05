@@ -12,7 +12,10 @@ import 'dotenv/config';
 import { z } from 'zod';
 
 const csv = (v: string): string[] =>
-  v.split(',').map((s) => s.trim()).filter(Boolean);
+  v
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 
 const EnvSchema = z
   .object({
@@ -25,11 +28,20 @@ const EnvSchema = z
       .transform(csv),
 
     FIREBASE_PROJECT_ID: z.string().min(1, 'FIREBASE_PROJECT_ID is required'),
+    // Optional: on Cloud Run we use Application Default Credentials instead of a file.
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
+    // Only used by scripts/get-test-token.ts; not needed to run the server itself.
+    FIREBASE_WEB_API_KEY: z.string().optional(),
 
-    LLM_PROVIDER: z.enum(['anthropic', 'mock']).default('mock'),
+    LLM_PROVIDER: z.enum(['anthropic', 'watsonx', 'mock']).default('mock'),
     ANTHROPIC_API_KEY: z.string().optional(),
     ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
+
+    // IBM watsonx.ai
+    WATSONX_API_KEY: z.string().optional(),
+    WATSONX_PROJECT_ID: z.string().optional(),
+    WATSONX_URL: z.string().url().optional(),
+    WATSONX_MODEL_ID: z.string().default('ibm/granite-3-3-8b-instruct'),
 
     DAILY_LLM_QUOTA_PER_USER: z.coerce.number().int().positive().default(100),
     MAX_SAMPLE_CHARS: z.coerce.number().int().positive().default(50_000),
@@ -37,6 +49,7 @@ const EnvSchema = z
     MAX_SAMPLES_PER_PROFILE: z.coerce.number().int().positive().max(500).default(50),
   })
   .superRefine((env, ctx) => {
+    // If the real LLM provider is selected, its key is mandatory and must look real.
     if (env.LLM_PROVIDER === 'anthropic') {
       const key = env.ANTHROPIC_API_KEY?.trim();
       if (!key) {
@@ -54,6 +67,33 @@ const EnvSchema = z
       }
     }
 
+    if (env.LLM_PROVIDER === 'watsonx') {
+      if (!env.WATSONX_API_KEY?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['WATSONX_API_KEY'],
+          message: 'WATSONX_API_KEY is required when LLM_PROVIDER=watsonx',
+        });
+      }
+      if (!env.WATSONX_PROJECT_ID?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['WATSONX_PROJECT_ID'],
+          message: 'WATSONX_PROJECT_ID is required when LLM_PROVIDER=watsonx',
+        });
+      }
+      if (!env.WATSONX_URL?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['WATSONX_URL'],
+          message:
+            'WATSONX_URL is required when LLM_PROVIDER=watsonx (e.g. https://us-south.ml.cloud.ibm.com)',
+        });
+      }
+    }
+
+    // Refuse to run the fake provider in production — a real deployment must not
+    // silently return canned analysis.
     if (env.NODE_ENV === 'production' && env.LLM_PROVIDER === 'mock') {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

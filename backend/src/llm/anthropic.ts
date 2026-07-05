@@ -2,10 +2,12 @@
  * Anthropic (Claude) provider.
  *
  * Closes a Canary gap: transient upstream failures are retried with exponential
- * backoff + jitter, and calls are bounded by a timeout. The API key is read only
- * from validated env and never logged or returned. Model JSON is validated against
- * Zod before use. To swap in IBM watsonx/Granite or OpenAI, implement LlmProvider
- * the same way and register it in provider.ts.
+ * backoff + jitter, and calls are bounded by a timeout so a hung upstream can't
+ * pin a request open. The API key is read only from validated env and never
+ * logged or returned. Model JSON is validated against Zod before use.
+ *
+ * To swap in IBM watsonx/Granite or OpenAI, implement LlmProvider the same way in
+ * a sibling file and register it in provider.ts.
  *
  * @author Saamarth Attray
  */
@@ -13,7 +15,12 @@ import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../config/env';
 import { logger } from '../lib/logger';
 import { UpstreamError } from '../lib/errors';
-import { AnalysisResultSchema, RewriteResultSchema, VoiceProfileSchema } from './schema';
+import { extractJson } from './jsonExtract';
+import {
+  AnalysisResultSchema,
+  RewriteResultSchema,
+  VoiceProfileSchema,
+} from './schema';
 import { analyzePrompt, profilePrompt, rewritePrompt, SYSTEM_ANALYST } from './prompts';
 import type { AnalysisResult, LlmProvider, RewriteResult, VoiceProfile } from './types';
 
@@ -26,21 +33,12 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function extractJson(text: string): unknown {
-  const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-  const start = cleaned.indexOf('{');
-  const end = cleaned.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) {
-    throw new UpstreamError('Model did not return JSON');
-  }
-  return JSON.parse(cleaned.slice(start, end + 1));
-}
-
 export class AnthropicProvider implements LlmProvider {
   readonly name = 'anthropic';
   private client: Anthropic;
 
   constructor() {
+    // Non-null because env validation guarantees the key when this provider runs.
     this.client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY as string });
   }
 
@@ -66,6 +64,7 @@ export class AnthropicProvider implements LlmProvider {
       } catch (err) {
         lastErr = err;
         const status = (err as { status?: number }).status;
+        // Retry only on transient conditions; fail fast on 4xx (except 429).
         const retriable = status === undefined || status === 429 || status >= 500;
         if (!retriable || attempt === MAX_RETRIES) break;
         const delay = BASE_DELAY_MS * 2 ** attempt + Math.floor(Math.random() * 200);
@@ -87,8 +86,15 @@ export class AnthropicProvider implements LlmProvider {
     return AnalysisResultSchema.parse(extractJson(text));
   }
 
-  async rewrite(profile: VoiceProfile, target: string, instructions?: string): Promise<RewriteResult> {
-    const text = await this.complete(SYSTEM_ANALYST, rewritePrompt(profile, target, instructions));
+  async rewrite(
+    profile: VoiceProfile,
+    target: string,
+    instructions?: string,
+  ): Promise<RewriteResult> {
+    const text = await this.complete(
+      SYSTEM_ANALYST,
+      rewritePrompt(profile, target, instructions),
+    );
     return RewriteResultSchema.parse(extractJson(text));
   }
 }
