@@ -1,8 +1,6 @@
-"use client";
-
 import DashboardHero from "@/components/dashboard/DashboardHero";
 import DashboardStatistics from "@/components/dashboard/DashboardStatistics";
-import { RequireAuth } from "@/components/global/RequireAuth";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 export default function DashboardPage() {
   return (

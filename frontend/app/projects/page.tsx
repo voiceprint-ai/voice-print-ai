@@ -7,7 +7,7 @@ import { ApiError, createProject, listProjects, type Project } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Card, StatusMessage } from "@/components/ui/Card";
 import { TextField } from "@/components/ui/Field";
-import { RequireAuth } from "@/components/global/RequireAuth";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 function ProjectsContent() {
   const { user } = useAuth();

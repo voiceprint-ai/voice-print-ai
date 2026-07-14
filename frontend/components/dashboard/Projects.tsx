@@ -39,7 +39,7 @@ function Projects({ projects, error }: ProjectsProps) {
       )}
 
       {projects !== null && projects.length > 0 && (
-        <ProjectsList recentProjects={projects.slice(0, 5)} />
+        <ProjectsList recentProjects={projects.slice(0, 6)} />
       )}
     </div>
   )

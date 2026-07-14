@@ -12,7 +12,7 @@ import {
   type Sample,
 } from "@/lib/api";
 import { StatusMessage } from "@/components/ui/Card";
-import { RequireAuth } from "@/components/global/RequireAuth";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { ProjectHeader } from "@/components/projects/ProjectHeader";
 import { SamplesPanel } from "@/components/projects/SamplesPanel";
 import { ProfilePanel } from "@/components/projects/ProfilePanel";
