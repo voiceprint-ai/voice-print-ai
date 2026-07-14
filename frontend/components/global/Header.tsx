@@ -5,20 +5,20 @@ import { usePathname } from "next/navigation";
 import { FaRegUser } from "react-icons/fa";
 import { useAuth } from "@/lib/auth-context";
 
-function NavBar() {
+function Header() {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
   const pathname = usePathname();
 
   return (
     <header className="border-b border-ink-900/10">
-      <div className="row flex justify-between items-center h-20 gap-3">
+      <div className="row flex justify-between items-center h-18 gap-3">
         <Link href="/" className="font-display font-bold text-lg tracking-tight">
           Voiceprint<span className="text-indigo-600">.</span>
         </Link>
 
-        <nav aria-label="Main" className="flex justify-between items-center gap-8 font-medium">
+        <nav aria-label="Main" className="flex justify-between items-center gap-8 text-md font-medium">
           <Link
-            className="link__hover-effect"
+            className="link__hover-effect hidden sm:block"
             href="/"
             aria-current={pathname === "/" ? "page" : undefined}
           >
@@ -36,7 +36,7 @@ function NavBar() {
             onClick={user ? () => void signOut() : () => void signInWithGoogle()}
             disabled={loading}
             title={user ? `Signed in as ${user.email ?? user.uid}` : "Sign in"}
-            className="w-11 h-11 rounded-full bg-paper-dim flex justify-center items-center hover:bg-indigo-600 hover:text-paper transition-colors"
+            className="w-10 h-10 rounded-full bg-paper-dim flex justify-center items-center hover:bg-indigo-600 hover:text-paper transition-colors"
           >
             <FaRegUser size={18} aria-hidden="true" />
           </button>
@@ -46,4 +46,4 @@ function NavBar() {
   );
 }
 
-export default NavBar;
+export default Header;

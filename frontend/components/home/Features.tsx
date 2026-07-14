@@ -18,8 +18,8 @@ const FEATURES = [
 
 function Features() {
   return (
-    <section className="global_container" aria-label="What Voiceprint does">
-      <ul className="row flex flex-col md:flex-row gap-10 md:gap-16 justify-center items-start md:items-center text-base md:text-lg font-medium">
+    <section className="global-container" aria-label="What Voiceprint does">
+      <ul className="row flex flex-col md:flex-row gap-10 md:gap-16 justify-center items-center md:items-center text-base md:text-lg font-medium">
         {FEATURES.map(({ Icon, text }) => (
           <li key={text} className="flex flex-col max-w-64 gap-3 items-center text-center">
             <Icon size={32} aria-hidden="true" className="text-indigo-600" />

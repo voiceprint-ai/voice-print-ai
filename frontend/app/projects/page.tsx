@@ -7,9 +7,10 @@ import { ApiError, createProject, listProjects, type Project } from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Card, StatusMessage } from "@/components/ui/Card";
 import { TextField } from "@/components/ui/Field";
+import { RequireAuth } from "@/components/global/RequireAuth";
 
-export default function DashboardPage() {
-  const { user, loading: authLoading, signInWithGoogle } = useAuth();
+function ProjectsContent() {
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
@@ -58,32 +59,8 @@ export default function DashboardPage() {
     }
   }
 
-  if (authLoading) {
-    return (
-      <main className="global_container">
-        <div className="row">
-          <p className="text-ink-500">Loading your account…</p>
-        </div>
-      </main>
-    );
-  }
-
-  if (!user) {
-    return (
-      <main className="global_container">
-        <div className="row flex flex-col items-start gap-4 max-w-lg">
-          <h1 className="font-display font-bold text-2xl">Sign in to continue</h1>
-          <p className="text-ink-700">
-            Your projects and writing samples are private to your account.
-          </p>
-          <Button onClick={() => void signInWithGoogle()}>Sign in with Google</Button>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main className="global_container">
+    <main className="global-container">
       <div className="row flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="font-display font-bold text-3xl">Your projects</h1>
@@ -132,10 +109,7 @@ export default function DashboardPage() {
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {projects.map((p) => (
                 <li key={p.id}>
-                  <Link
-                    href={`/dashboard/projects/${p.id}`}
-                    className="block rounded-2xl"
-                  >
+                  <Link href={`/projects/${p.id}`} className="block rounded-2xl">
                     <Card className="hover:border-indigo-600 transition-colors h-full">
                       <h3 className="font-display font-semibold text-lg">{p.name}</h3>
                       <p className="text-sm text-ink-500 mt-1">
@@ -151,5 +125,13 @@ export default function DashboardPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function ProjectsPage() {
+  return (
+    <RequireAuth>
+      <ProjectsContent />
+    </RequireAuth>
   );
 }

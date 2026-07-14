@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Serif, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "@/components/global/NavBar";
+import Header from "@/components/global/Header";
 import { SkipLink } from "@/components/global/SkipLink";
 import { AuthProvider } from "@/lib/auth-context";
 
@@ -41,7 +41,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <SkipLink />
-          <NavBar />
+          <Header />
           <div id="main-content" className="flex-1">
             {children}
           </div>

@@ -18,7 +18,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Do not create a `src/` directory.
 - Use Tailwind CSS for styling, avoid adding css class.
 - Keep components reusable and simple.
-- Use the existing `.row` and `.global_container` layout classes for sections when appropriate.
+- Use the existing `.row` and `.global-container` layout classes for sections when appropriate.
+- Use react icons for icons
 
 ## Important
 Before making big changes, explain the plan first.
