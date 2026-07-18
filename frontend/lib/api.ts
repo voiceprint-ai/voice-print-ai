@@ -62,6 +62,14 @@ export interface Sample {
   createdAt: number;
 }
 
+/** Mirrors backend/src/domain/analyses.repo.ts AnalysisRecord. */
+export interface AnalysisRecord {
+  id: string;
+  targetPreview: string;
+  result: AnalysisResult;
+  createdAt: number;
+}
+
 /** Shape of every error response the backend returns (see backend/src/lib/errors.ts). */
 export class ApiError extends Error {
   readonly status: number;
@@ -192,6 +200,14 @@ export function rewriteTarget(
     method: "POST",
     body: { target, instructions },
   });
+}
+
+// --- Analysis history ---
+
+export function listAnalyses(
+  projectId: string,
+): Promise<{ analyses: AnalysisRecord[] }> {
+  return request(`/v1/projects/${projectId}/analyses`);
 }
 
 // --- Account ---

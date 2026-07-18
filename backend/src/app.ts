@@ -25,6 +25,7 @@ import { enforceDailyQuota } from './middleware/quota';
 import { globalLimiter, llmLimiter } from './middleware/rateLimit';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { accountRouter } from './routes/account';
+import { analysesRouter } from './routes/analyses';
 import { analyzeRouter } from './routes/analyze';
 import { healthRouter } from './routes/health';
 import { profileRouter } from './routes/profile';
@@ -76,6 +77,7 @@ export function createApp(): express.Express {
   // Non-LLM authed routes
   app.use('/v1', projectsRouter);
   app.use('/v1', samplesRouter);
+  app.use('/v1', analysesRouter);
   app.use('/v1', accountRouter);
 
   // LLM-backed routes: strict per-user limiter + daily spend quota
