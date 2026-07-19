@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, StatusMessage } from "@/components/ui/Card";
 import { TextField } from "@/components/ui/Field";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { useRouter } from "next/navigation";
 
 function ProjectsContent() {
   const { user } = useAuth();
@@ -15,6 +16,7 @@ function ProjectsContent() {
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!user) return;
@@ -49,9 +51,10 @@ function ProjectsContent() {
     setCreating(true);
     setError(null);
     try {
-      await createProject(name.trim());
+      const { project } = await createProject(name.trim());
       setName("");
       await refresh();
+      router.push(`/projects/${project.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't create the project.");
     } finally {

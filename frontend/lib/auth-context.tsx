@@ -18,6 +18,8 @@ import {
 } from "firebase/auth";
 import {
   createContext,
+  Dispatch,
+  SetStateAction,
   useContext,
   useEffect,
   useMemo,
@@ -30,8 +32,11 @@ interface AuthContextValue {
   user: User | null;
   /** True until the initial Firebase auth check resolves. */
   loading: boolean;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: Dispatch<SetStateAction<boolean>>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -39,6 +44,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, (u) => {
@@ -52,14 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       loading,
+      isAuthModalOpen,
+      setIsAuthModalOpen,
       signInWithGoogle: async () => {
         await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
       },
       signOut: async () => {
         await firebaseSignOut(firebaseAuth);
       },
+      
     }),
-    [user, loading],
+    [user, loading, isAuthModalOpen, setIsAuthModalOpen],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
