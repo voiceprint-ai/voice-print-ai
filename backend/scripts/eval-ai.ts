@@ -61,6 +61,91 @@ const VOICE_B_DRAFT =
 const PASS_THRESHOLD = 15;
 
 // ---------------------------------------------------------------------------
+// Slang / casual-overshoot markers for Check 2b.
+// If the rewritten text contains any of these that don't appear in the original
+// reference samples, the rewrite has overshot the target voice.
+// ---------------------------------------------------------------------------
+const SLANG_MARKERS: string[] = [
+  'gotta', 'wanna', 'kinda', 'sorta', 'yeah', 'dude', 'lol',
+  'nah', 'gonna', 'ain\'t', 'lemme', 'gimme', 'y\'all',
+];
+
+// ---------------------------------------------------------------------------
+// Check 1 helper — summary/score consistency (best-effort heuristic).
+//
+// The LLM emits both a qualitative `summary` and numeric `dimensions` scores.
+// A known watsonx bug is that the words and numbers can disagree (e.g. summary
+// says "moderately matched" but tone/sentenceStructure scores are 10/10).
+// We scan for high/medium/low qualifier keywords and compare against the average
+// of all four dimension scores. Flag FAIL only when there is a clear contradiction.
+//
+// Keyword tiers (not exhaustive — intentionally a heuristic):
+//   high:   closely | strongly | very similar | excellent | nearly identical
+//   medium: moderately | somewhat | partially | reasonably | fairly
+//   low:    significant | sharply | not at all | diverges | substantially | poor
+// ---------------------------------------------------------------------------
+function checkSummaryScoreConsistency(
+  result: { summary: string; dimensions: { tone: number; sentenceStructure: number; vocabulary: number; quirks: number } },
+  label: string,
+): void {
+  const text = result.summary.toLowerCase();
+  const avg = Math.round(
+    (result.dimensions.tone +
+      result.dimensions.sentenceStructure +
+      result.dimensions.vocabulary +
+      result.dimensions.quirks) / 4,
+  );
+
+  const highWords = ['closely', 'strongly', 'very similar', 'excellent', 'nearly identical'];
+  const medWords  = ['moderately', 'somewhat', 'partially', 'reasonably', 'fairly'];
+  const lowWords  = ['significant', 'sharply', 'not at all', 'diverges', 'substantially', 'poor'];
+
+  const matchedHigh = highWords.find((w) => text.includes(w));
+  const matchedMed  = medWords.find((w) => text.includes(w));
+  const matchedLow  = lowWords.find((w) => text.includes(w));
+
+  let tier: 'high' | 'medium' | 'low' | 'none' = 'none';
+  let matchedWord = '';
+  if (matchedHigh)     { tier = 'high';   matchedWord = matchedHigh; }
+  else if (matchedMed) { tier = 'medium'; matchedWord = matchedMed; }
+  else if (matchedLow) { tier = 'low';    matchedWord = matchedLow; }
+
+  if (tier === 'none') {
+    record(
+      `${label} — summary/score consistency`,
+      true,
+      `no qualifier keyword detected in summary; skipping heuristic  avg-dim=${avg}`,
+    );
+    return;
+  }
+
+  // Clear-contradiction thresholds:
+  //   "high" language but avg < 55  → mismatch
+  //   "medium" language but avg < 15 or avg > 85  → mismatch
+  //   "low" language but avg > 50  → mismatch
+  let passed = true;
+  let reason = '';
+
+  if (tier === 'high' && avg < 55) {
+    passed = false;
+    reason = `summary says "${matchedWord}" but avg dimension score is only ${avg} (expected > 55)`;
+  } else if (tier === 'medium' && avg < 15) {
+    passed = false;
+    reason = `summary says "${matchedWord}" but avg dimension score is ${avg} (expected 15-85)`;
+  } else if (tier === 'medium' && avg > 85) {
+    passed = false;
+    reason = `summary says "${matchedWord}" but avg dimension score is ${avg} (expected 15-85)`;
+  } else if (tier === 'low' && avg > 50) {
+    passed = false;
+    reason = `summary says "${matchedWord}" but avg dimension score is ${avg} (expected < 50)`;
+  } else {
+    reason = `summary says "${matchedWord}" (${tier}), avg dimension score ${avg} — consistent ✓`;
+  }
+
+  record(`${label} — summary/score consistency`, passed, reason);
+}
+
+// ---------------------------------------------------------------------------
 // Result tracking
 // ---------------------------------------------------------------------------
 
@@ -133,7 +218,18 @@ async function main(): Promise<void> {
   console.log('');
 
   // ------------------------------------------------------------------
-  // Step 3 — rewrite checks (cross-voice draft should be transformed)
+  // Step 3 — summary/score consistency (heuristic, Check 1)
+  // ------------------------------------------------------------------
+  console.log('── Summary/score consistency checks ───────────────────────');
+
+  // Run against the cross-voice analyses — that is where the watsonx
+  // "words contradict numbers" bug was observed in manual testing.
+  checkSummaryScoreConsistency(crossA, 'Voice A cross-voice analysis');
+  checkSummaryScoreConsistency(crossB, 'Voice B cross-voice analysis');
+  console.log('');
+
+  // ------------------------------------------------------------------
+  // Step 4 — rewrite checks (cross-voice draft should be transformed)
   // ------------------------------------------------------------------
   console.log('── Rewrite checks ─────────────────────────────────────────');
 
@@ -184,7 +280,66 @@ async function main(): Promise<void> {
   console.log('');
 
   // ------------------------------------------------------------------
-  // Step 4 — summary table
+  // Step 5 — rewrite quality checks (Check 2a + 2b)
+  // ------------------------------------------------------------------
+  console.log('── Rewrite quality checks ─────────────────────────────────');
+
+  // Check 2a — rewrite pulls the text toward the target profile.
+  // Re-score the rewritten text against the same profile and compare to the
+  // original cross-voice score. PASS = the rewritten text scores higher.
+  const postRewriteA = await llm.scoreConsistency(profileA, rewriteA.rewritten);
+  const improvedA = postRewriteA.overallScore > crossA.overallScore;
+  record(
+    'Voice A — rewrite improves consistency score',
+    improvedA,
+    `pre-rewrite=${Math.round(crossA.overallScore)}  post-rewrite=${Math.round(postRewriteA.overallScore)}` +
+      (improvedA ? '  (improved ✓)' : '  (no improvement — rewrite may not be pulling toward profile)'),
+  );
+
+  const postRewriteB = await llm.scoreConsistency(profileB, rewriteB.rewritten);
+  const improvedB = postRewriteB.overallScore > crossB.overallScore;
+  record(
+    'Voice B — rewrite improves consistency score',
+    improvedB,
+    `pre-rewrite=${Math.round(crossB.overallScore)}  post-rewrite=${Math.round(postRewriteB.overallScore)}` +
+      (improvedB ? '  (improved ✓)' : '  (no improvement — rewrite may not be pulling toward profile)'),
+  );
+
+  // Check 2b — rewrite doesn't introduce slang absent from the reference samples.
+  // A known watsonx overshoot: profile said "a little informal", rewrite used "gotta".
+  // We normalise to lowercase and use word-boundary matching to avoid false positives
+  // (e.g. "altogether" shouldn't match "all").
+  const samplesA = VOICE_A_SAMPLES.join(' ').toLowerCase();
+  const rewrittenA = rewriteA.rewritten.toLowerCase();
+  const newSlangA = SLANG_MARKERS.filter((marker) => {
+    const re = new RegExp(`\\b${marker}\\b`);
+    return re.test(rewrittenA) && !re.test(samplesA);
+  });
+  record(
+    'Voice A — rewrite does not introduce slang absent from reference samples',
+    newSlangA.length === 0,
+    newSlangA.length === 0
+      ? 'no new slang markers detected ✓'
+      : `introduced slang not present in source voice: ${newSlangA.join(', ')}`,
+  );
+
+  const samplesB = VOICE_B_SAMPLES.join(' ').toLowerCase();
+  const rewrittenB = rewriteB.rewritten.toLowerCase();
+  const newSlangB = SLANG_MARKERS.filter((marker) => {
+    const re = new RegExp(`\\b${marker}\\b`);
+    return re.test(rewrittenB) && !re.test(samplesB);
+  });
+  record(
+    'Voice B — rewrite does not introduce slang absent from reference samples',
+    newSlangB.length === 0,
+    newSlangB.length === 0
+      ? 'no new slang markers detected ✓'
+      : `introduced slang not present in source voice: ${newSlangB.join(', ')}`,
+  );
+  console.log('');
+
+  // ------------------------------------------------------------------
+  // Step 6 — summary table
   // ------------------------------------------------------------------
   console.log('── Summary ────────────────────────────────────────────────');
   const colWidth = Math.max(...results.map((r) => r.name.length)) + 2;
