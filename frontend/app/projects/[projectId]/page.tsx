@@ -18,6 +18,7 @@ import { SamplesPanel } from "@/components/projects/SamplesPanel";
 import { ProfilePanel } from "@/components/projects/ProfilePanel";
 import { AnalyzePanel } from "@/components/projects/AnalyzePanel";
 import { RewritePanel } from "@/components/projects/RewritePanel";
+import { HistoryPanel } from "@/components/projects/HistoryPanel";
 import LoadingCircles from "@/components/animation/LoadingCircles";
 
 function ProjectDetailContent() {
@@ -118,6 +119,7 @@ function ProjectDetailContent() {
         <SamplesPanel projectId={project.id} samples={samples} onChange={refresh} />
         <ProfilePanel project={project} onChange={refresh} />
         <AnalyzePanel projectId={project.id} hasProfile={Boolean(project.voiceProfile)} />
+        <HistoryPanel projectId={project.id} />
         <RewritePanel projectId={project.id} hasProfile={Boolean(project.voiceProfile)} />
       </div>
     </main>
