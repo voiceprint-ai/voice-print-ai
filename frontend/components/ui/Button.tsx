@@ -5,7 +5,7 @@ type Variant = "primary" | "secondary" | "danger";
 const VARIANT_CLASSES: Record<Variant, string> = {
   primary: "bg-indigo-600 hover:bg-indigo-700 text-paper",
   secondary: "bg-paper-dim hover:bg-ink-900/10 text-ink-900",
-  danger: "bg-rose-100 hover:bg-rose-600 hover:text-paper text-rose-600",
+  danger: "bg-rose-300/60 hover:bg-rose-600 hover:text-paper text-rose-600",
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

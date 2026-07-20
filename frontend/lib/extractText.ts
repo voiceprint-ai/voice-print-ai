@@ -13,14 +13,13 @@
  * @author Saamarth Attray
  */
 import mammoth from "mammoth";
-import * as pdfjsLib from "pdfjs-dist";
 
 // Configure the PDF.js worker once, client-side only. Version must match the
 // installed pdfjs-dist version (see package.json) — the CDN path fails closed
 // (throws) rather than silently using a mismatched worker if it doesn't.
-if (typeof window !== "undefined") {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-}
+// if (typeof window !== "undefined") {
+//   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+// }
 
 export class UnsupportedFileError extends Error {}
 
@@ -43,6 +42,9 @@ async function extractFromDocx(file: File): Promise<string> {
 
 async function extractFromPdf(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
+
+  const pdfjsLib = await import("pdfjs-dist")
+  
   const doc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
   const pageTexts: string[] = [];

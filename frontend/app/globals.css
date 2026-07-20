@@ -14,9 +14,12 @@
   --color-ink-500: #6b6e7a;
   --color-indigo-600: #3d4a8a;
   --color-indigo-700: #2f3a6d;
+  --color-ochre-600: #ab7f27;
   --color-ochre-500: #b98b2e;
+  --color-ochre-300: #f2deb1;
   --color-ochre-100: #f3e6c8;
   --color-moss-600: #4b6a52;
+  --color-moss-300: #c5e3c1;
   --color-moss-100: #e1e9e0;
   --color-rose-600: #a34b4b;
   --color-rose-100: #f2dede;
@@ -166,5 +169,13 @@
     width: 100%;
     left: 0;
     right: auto;
+  }
+
+  .spread-dotted-border {
+    background:
+      radial-gradient(circle, currentColor 1px, transparent 1px) top left / 12px 12px repeat-x,
+      radial-gradient(circle, currentColor 1px, transparent 1px) bottom left / 12px 12px repeat-x,
+      radial-gradient(circle, currentColor 1px, transparent 1px) top left / 12px 12px repeat-y,
+      radial-gradient(circle, currentColor 1px, transparent 1px) top right / 12px 12px repeat-y;
   }
 }

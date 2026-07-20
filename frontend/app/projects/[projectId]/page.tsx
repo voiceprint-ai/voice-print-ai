@@ -18,6 +18,7 @@ import { SamplesPanel } from "@/components/projects/SamplesPanel";
 import { ProfilePanel } from "@/components/projects/ProfilePanel";
 import { AnalyzePanel } from "@/components/projects/AnalyzePanel";
 import { RewritePanel } from "@/components/projects/RewritePanel";
+import LoadingCircles from "@/components/animation/LoadingCircles";
 
 function ProjectDetailContent() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -90,8 +91,11 @@ function ProjectDetailContent() {
   if (!project) {
     return (
       <main className="global-container">
-        <div className="row">
-          <p className="text-ink-500">Loading project…</p>
+        <div className="row min-h-[70vh] flex justify-center items-center relative">
+          <div className="flex flex-col justify-between items-center gap-5 text-ink-500 text-lg absolute top-8 left-1/2 -translate-x-1/2">
+            <span>Loading your project</span> 
+            <LoadingCircles />
+          </div>
         </div>
       </main>
     );

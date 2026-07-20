@@ -59,9 +59,9 @@ function Header() {
             onClick={() => setIsAuthModalOpen(true)}
             disabled={loading}
             title={user ? `Signed in as ${user.email ?? user.uid}` : "Sign in"}
-            className="w-10 h-10 rounded-full flex justify-center items-center hover:bg-indigo-600 hover:text-paper transition-colors bg-ink-900"
+            className="w-10 h-10 rounded-full flex justify-center items-center hover:bg-indigo-600 hover:text-paper transition-colors bg-ink-900/95"
           >
-            <FaRegUser size={18} aria-hidden="true" className="text-white" />
+            <FaRegUser size={18} aria-hidden="true" className="text-paper" />
           </button>
         </div>
       </div>
