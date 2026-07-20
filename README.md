@@ -42,9 +42,10 @@ Manual testing against real watsonx (`ibm/granite-4-h-small`) confirmed the core
 ## How IBM Bob was used
 
 IBM Bob was used as the primary development tool throughout the project, including:
-- Building the analysis history feature end-to-end (new backend route, frontend chart component, wired into the existing project page) by giving Bob the existing codebase conventions as context and having it match them
-- Building the `eval-ai.ts` evaluation script and its checks, based on specific bugs found during manual testing
-- General debugging and code cleanup throughout development
+- Building the analysis history feature end-to-end, including the new backend route, frontend chart component, and integration into the existing project page, by providing Bob with the existing codebase conventions and asking it to match the established structure
+- Building the eval-ai.ts evaluation script and its checks, based on specific bugs identified during manual testing
+- Assisting with draft UI implementation, skeleton loading states, and auth flow handling, using clear implementation instructions and project-specific requirements
+- Supporting general debugging, refactoring, and code cleanup throughout development
 
 ## Getting started
 
