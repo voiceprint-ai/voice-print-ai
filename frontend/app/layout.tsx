@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/global/Header";
 import { SkipLink } from "@/components/global/SkipLink";
 import { AuthProvider } from "@/lib/auth-context";
+import AuthModal from "@/components/global/AuthModal";
 
 const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
@@ -38,10 +39,11 @@ export default function RootLayout({
       lang="en"
       className={`${plexSans.variable} ${plexSerif.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen flex flex-col relative">
         <AuthProvider>
           <SkipLink />
           <Header />
+          <AuthModal />
           <div id="main-content" className="flex-1">
             {children}
           </div>

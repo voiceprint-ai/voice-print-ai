@@ -2,36 +2,35 @@ import Link from "next/link";
 import { Card } from "../ui/Card";
 import { Project } from "@/lib/api";
 
-
 type ProjectListsProps = {
-  recentProjects: Project[]
+  projects: Project[]
 }
 
-function ProjectsList({ recentProjects }: ProjectListsProps) {
+function ProjectsList({ projects }: ProjectListsProps) {
   return (
     <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-      {recentProjects.map((project) => (
+      {projects.map((project) => (
         <li key={project.id}>
           <Link
             href={`/projects/${project.id}`}
-            className="block rounded-2xl h-full group"
+            className="block rounded-2xl h-full group "
           >
-            <Card className="flex flex-col gap-3 h-full group-hover:border-indigo-600 transition-colors">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-display font-semibold text-base text-ink-900 leading-snug">
+            <Card className="flex flex-col gap-3 h-full bg-ink-900 group-hover:opacity-95 border-4 transition-opacity">
+              <div className="flex items-start justify-between gap-2 ">
+                <h3 className="font-display font-semibold text-xl text-paper leading-snug">
                   {project.name}
                 </h3>
                 <span
-                  className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
+                  className={`shrink-0 text-sm font-medium px-2 py-0.5 rounded-full shadow-md ${
                     project.voiceProfile
-                      ? "bg-moss-100 text-moss-600"
+                      ? "bg-moss-300 text-moss-600"
                       : "bg-paper-dim text-ink-500"
                   }`}
                 >
                   {project.voiceProfile ? "Profile ready" : "No profile"}
                 </span>
               </div>
-              <p className="text-xs text-ink-500 mt-auto">
+              <p className="text-sm text-ochre-300 mt-auto">
                 {project.sampleCount} sample{project.sampleCount === 1 ? "" : "s"}
               </p>
             </Card>

@@ -35,7 +35,7 @@ function DashboardStatistics() {
     const totalProjects = projects?.length ?? "--";
     const totalSamples = projects?.reduce((sum, project) => sum + project.sampleCount, 0) ?? "--";
     const totalVoiceProfilesReady = projects?.filter((project) => project.voiceProfile).length ?? "--";
-    const totalVoiceProfilesPending = projects?.filter((project) => !project.voiceProfile).length ?? '--';
+    const totalVoiceProfilesPending = projects?.filter((project) => !project.voiceProfile).length ?? "--";
 
 
     const STATS = [
@@ -43,29 +43,29 @@ function DashboardStatistics() {
             label: "Total projects",
             value: totalProjects, 
             Icon: IconFolder,
-            color: "text-indigo-600",
-            bg: "bg-indigo-600/8",
+            color: "text-indigo-800",
+            bg: "bg-indigo-500/30",
         },
         {
             label: "Sample uploaded",
             value: totalSamples,
             Icon: IconFileAudio,
-            color: "text-ochre-500",
-            bg: "bg-ochre-100",
+            color: "text-ochre-600",
+            bg: "bg-ochre-300",
         },
         {
             label: "Voice profiles ready",
             value: totalVoiceProfilesReady,
             Icon: IconMic,
             color: "text-moss-600",
-            bg: "bg-moss-100",
+            bg: "bg-moss-300/75",
         },
         {
             label: "Profiles pending",
             value: totalVoiceProfilesPending,
             Icon: IconSearch,
             color: "text-rose-600",
-            bg: "bg-rose-100",
+            bg: "bg-rose-200/95",
         },
     ];
 

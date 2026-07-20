@@ -13,7 +13,7 @@ function DashboardHero() {
                     Manage your voice profiles, writing samples, and AI-assisted drafts all in one creative workspace.
                 </p>
                 <Link href="/projects">
-                    <Button variant="primary" className="flex items-center gap-2 w-fit text-nowrap">
+                    <Button variant="primary" className="flex items-center gap-2 w-fit text-nowrap md:-translate-y-2">
                         <IconPlus />
                         New project
                     </Button>

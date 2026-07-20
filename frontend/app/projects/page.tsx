@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError, createProject, listProjects, type Project } from "@/lib/api";
@@ -8,6 +7,10 @@ import { Button } from "@/components/ui/Button";
 import { Card, StatusMessage } from "@/components/ui/Card";
 import { TextField } from "@/components/ui/Field";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { useRouter } from "next/navigation";
+import LoadingCircles from "@/components/animation/LoadingCircles";
+import ProjectsList from "@/components/dashboard/ProjectsList";
+import ProjectsListLoading from "@/components/loading/ProjectsListLoading";
 
 function ProjectsContent() {
   const { user } = useAuth();
@@ -15,6 +18,7 @@ function ProjectsContent() {
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!user) return;
@@ -49,9 +53,10 @@ function ProjectsContent() {
     setCreating(true);
     setError(null);
     try {
-      await createProject(name.trim());
+      const { project } = await createProject(name.trim());
       setName("");
       await refresh();
+      router.push(`/projects/${project.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't create the project.");
     } finally {
@@ -62,7 +67,7 @@ function ProjectsContent() {
   return (
     <main className="global-container">
       <div className="row flex flex-col gap-8">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4">
           <h1 className="font-display font-bold text-3xl">Your projects</h1>
           <p className="text-ink-700">
             Each project holds one voice — its reference samples, its profile, and every
@@ -72,15 +77,16 @@ function ProjectsContent() {
 
         <section aria-labelledby="new-project-heading">
           <Card>
-            <h2 id="new-project-heading" className="font-display font-semibold text-lg mb-3">
+            <h2 id="new-project-heading" className="font-display font-bold text-xl mb-3">
               Start a new project
             </h2>
-            <form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3 items-start">
+            <form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
               <div className="flex-1 w-full">
                 <TextField
                   label="Project name"
                   placeholder="e.g. Blog voice, Grad school essays"
                   value={name}
+                  autoComplete="off"
                   onChange={(e) => setName(e.target.value)}
                   required
                   maxLength={120}
@@ -94,8 +100,9 @@ function ProjectsContent() {
           </Card>
         </section>
 
-        <section aria-label="Existing projects">
-          {projects === null && !error && <p className="text-ink-500">Loading projects…</p>}
+        <section aria-label="Existing projects" className="relative">
+          {projects === null && !error && 
+            <ProjectsListLoading />}
 
           {projects !== null && projects.length === 0 && (
             <Card className="text-center py-10">
@@ -106,21 +113,7 @@ function ProjectsContent() {
           )}
 
           {projects !== null && projects.length > 0 && (
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {projects.map((p) => (
-                <li key={p.id}>
-                  <Link href={`/projects/${p.id}`} className="block rounded-2xl">
-                    <Card className="hover:border-indigo-600 transition-colors h-full">
-                      <h3 className="font-display font-semibold text-lg">{p.name}</h3>
-                      <p className="text-sm text-ink-500 mt-1">
-                        {p.sampleCount} sample{p.sampleCount === 1 ? "" : "s"} &middot;{" "}
-                        {p.voiceProfile ? "profile ready" : "no profile yet"}
-                      </p>
-                    </Card>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <ProjectsList projects={projects} />
           )}
         </section>
       </div>
