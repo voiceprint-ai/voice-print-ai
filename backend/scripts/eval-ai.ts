@@ -84,6 +84,49 @@ const SLANG_MARKERS: string[] = [
 //   medium: moderately | somewhat | partially | reasonably | fairly
 //   low:    significant | sharply | not at all | diverges | substantially | poor
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Vocab-complexity drift check helper — Check 2c.
+//
+// Computes the average word length (characters, punctuation stripped) for a
+// body of text. Used by checkVocabComplexity to compare reference samples
+// against the rewritten output.
+// ---------------------------------------------------------------------------
+function avgWordLen(text: string): number {
+  const words = text
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w) => w.replace(/[^a-z']/g, ''))
+    .filter((w) => w.length > 0);
+  if (words.length === 0) return 0;
+  return words.reduce((sum, w) => sum + w.length, 0) / words.length;
+}
+
+// Maximum tolerated increase in average word length before the rewrite is
+// considered to have drifted toward more complex vocabulary than the source
+// voice actually used.
+const VOCAB_COMPLEXITY_THRESHOLD = 1.5;
+
+function checkVocabComplexity(
+  samples: string[],
+  rewritten: string,
+  label: string,
+): void {
+  const refAvg = avgWordLen(samples.join(' '));
+  const rewriteAvg = avgWordLen(rewritten);
+  const delta = rewriteAvg - refAvg;
+  const drifted = delta > VOCAB_COMPLEXITY_THRESHOLD;
+  const refStr = refAvg.toFixed(2);
+  const rewStr = rewriteAvg.toFixed(2);
+  const deltaStr = (delta >= 0 ? '+' : '') + delta.toFixed(2);
+  record(
+    `${label} — rewrite does not use more complex vocabulary than reference`,
+    !drifted,
+    `refAvgWordLen=${refStr}  rewriteAvgWordLen=${rewStr}  delta=${deltaStr}  (threshold=${VOCAB_COMPLEXITY_THRESHOLD})` +
+      (drifted ? '  — vocabulary drifted toward complexity' : '  ✓'),
+  );
+}
+
 function checkSummaryScoreConsistency(
   result: { summary: string; dimensions: { tone: number; sentenceStructure: number; vocabulary: number; quirks: number } },
   label: string,
@@ -336,6 +379,11 @@ async function main(): Promise<void> {
       ? 'no new slang markers detected ✓'
       : `introduced slang not present in source voice: ${newSlangB.join(', ')}`,
   );
+
+  // Check 2c — rewrite does not drift toward more complex vocabulary than
+  // the reference samples actually used.
+  checkVocabComplexity(VOICE_A_SAMPLES, rewriteA.rewritten, 'Voice A');
+  checkVocabComplexity(VOICE_B_SAMPLES, rewriteB.rewritten, 'Voice B');
   console.log('');
 
   // ------------------------------------------------------------------
