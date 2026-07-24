@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/backend/:path*",
-      "destination": "https://voice-print-ai.vercel.app/api/backend/:path*"
+      "destination": "https://voice-print-ai-backend.vercel.app/:path*"
     }
   ]
 }
