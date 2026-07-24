@@ -1,33 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "services": {
-    "frontend": {
-      "root": "frontend",
-      "framework": "nextjs"
-    },
-    "backend": {
-      "root": "backend",
-      "framework": "express",
-      "rewrites": [
-        {
-          "source": "/api/backend/:path*",
-          "destination": "/:path*"
-        }
-      ]
-    }
-  },
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/.next",
+  "framework": "nextjs",
   "rewrites": [
     {
       "source": "/api/backend/:path*",
-      "destination": {
-        "service": "backend"
-      }
-    },
-    {
-      "source": "/:path*",
-      "destination": {
-        "service": "frontend"
-      }
+      "destination": "https://voice-print-ai.vercel.app/api/backend/:path*"
     }
   ]
 }
